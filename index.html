@@ -218,9 +218,6 @@
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
@@ -254,7 +251,6 @@
         " ***************************************                 ********************************************             ************                   ************               *****************************************             *******************************************",
         " ***********************************                     ********************************************             ************                   ************                  **************************************             *******************************************",
         " ************                                            ********************************************             ************                   ************                     ***********************************             *******************************************",
-        " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
@@ -308,7 +304,7 @@
     }
 
     // ----------------------------------------------------------------
-    // 7) Pause/Resume with Spacebar (momentary pause while held)
+    // 7) Pause/Resume with Keyboard and Click (for desktop)
     // ----------------------------------------------------------------
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
@@ -320,24 +316,52 @@
         isPaused = false;
       }
     });
-
-    // ----------------------------------------------------------------
-    // 8) Pause/Resume with Touch (for mobile devices)
-    // ----------------------------------------------------------------
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      isPaused = true;
-    }, { passive: false });
-
-    canvas.addEventListener('touchend', () => {
-      isPaused = false;
+    canvas.addEventListener('click', function(e) {
+      isPaused = !isPaused;
     });
 
     // ----------------------------------------------------------------
-    // 9) Pause/Resume with Click (toggle pause on click)
+    // 8) Updated Touch Events for Mobile (Differentiate Tap vs. Swipe)
     // ----------------------------------------------------------------
-    canvas.addEventListener('click', () => {
-      isPaused = !isPaused;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+    const swipeThreshold = 10; // Adjust as needed for sensitivity
+
+    canvas.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchMoved = false;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', function(e) {
+      if (e.touches.length === 1) {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > swipeThreshold || Math.abs(dy) > swipeThreshold) {
+          touchMoved = true;
+          // Adjust offsetX based on horizontal swipe (convert movement to cell units)
+          offsetX = (offsetX - Math.floor(dx / cellWidth)) % patternCols;
+          // Update starting position for smoother incremental movement
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          // Pause the auto-scrolling while swiping
+          isPaused = true;
+          e.preventDefault();
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', function(e) {
+      if (!touchMoved) {
+        // If there was no significant movement, treat as a tap to toggle pause
+        isPaused = !isPaused;
+      } else {
+        // After a swipe, resume auto animation
+        isPaused = false;
+      }
     });
 
     // Start the animation loop
