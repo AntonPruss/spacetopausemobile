@@ -7,18 +7,17 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      /* Allow page scrolling */
+      overflow: auto;
       background-color: #000;
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
     }
     canvas {
       display: block;
-      touch-action: none;            /* Prevent default touch actions */
-      -ms-touch-action: none;
-      -webkit-touch-callout: none;   /* Prevent lens/magnifier on iOS */
+      /* Allow vertical panning (scrolling) */
+      touch-action: pan-y;
+      -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
@@ -30,10 +29,7 @@
       background: rgba(255,255,255,0.2);
       padding: 8px;
       border-radius: 4px;
-      /* Make the container unselectable, but allow inputs to be selectable */
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
     }
     #colorControls label {
@@ -41,15 +37,11 @@
       color: #fff;
       font-family: sans-serif;
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
     }
-    /* Allow the input fields to be interactive */
+    /* Allow input fields to be selectable */
     #colorControls input {
       -webkit-user-select: auto;
-      -moz-user-select: auto;
-      -ms-user-select: auto;
       user-select: auto;
     }
   </style>
@@ -82,15 +74,14 @@
     const ctx = canvas.getContext('2d');
 
     // ----------------------------------------------------------------
-    // 1) Fixed number of columns (width) and rows (height)
+    // 1) Fixed number of columns and rows
     // ----------------------------------------------------------------
     const patternCols = 300;
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    // On mobile devices, double the vertical resolution by doubling the row count
+    // On mobile devices, use more rows
     const patternRows = isMobile ? 300 : 200;
 
     let cellWidth, cellHeight;
-
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -98,32 +89,28 @@
       cellHeight = canvas.height / patternRows;
     }
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // initial call
+    resizeCanvas();
 
     // ----------------------------------------------------------------
-    // 2) Retro color array -- updated from color pickers
+    // 2) Retro color array, updated from color pickers
     // ----------------------------------------------------------------
     let retroColors = ['#eeeeee', '#979797', '#666666', '#000000'];
-
-    // Setup color picker inputs
     const colorInputs = [
       document.getElementById('color1'),
       document.getElementById('color2'),
       document.getElementById('color3'),
       document.getElementById('color4')
     ];
-
-    // Update patterns when a color changes
     colorInputs.forEach((input, index) => {
       input.addEventListener('input', () => {
         retroColors[index] = input.value;
-        // Regenerate both background & pause patterns
+        // Regenerate patterns on color change
         currentPattern = generatePattern(patternCols, patternRows);
         pauseTextPattern = generatePattern(100, 35);
       });
     });
 
-    // Prevent touch events on color controls from bubbling to the canvas
+    // Prevent touch events on the color controls from propagating to the canvas
     const controls = document.getElementById('colorControls');
     ['touchstart', 'touchmove', 'touchend'].forEach(eventType => {
       controls.addEventListener(eventType, function(e) {
@@ -137,7 +124,6 @@
     function getRandomColor() {
       return retroColors[Math.floor(Math.random() * retroColors.length)];
     }
-
     function generatePattern(cols, rows) {
       const pattern = [];
       for (let y = 0; y < rows; y++) {
@@ -149,8 +135,6 @@
       }
       return pattern;
     }
-
-    // Main background & "PAUSE" text patterns
     let currentPattern = generatePattern(patternCols, patternRows);
     let pauseTextPattern = generatePattern(100, 35);
 
@@ -159,8 +143,6 @@
     // ----------------------------------------------------------------
     let offsetX = 0;
     let isPaused = false;
-
-    // Disable smoothing & draw each cell at integer boundaries
     function drawPattern() {
       ctx.imageSmoothingEnabled = false;
       for (let y = 0; y < patternRows; y++) {
@@ -169,9 +151,7 @@
           ctx.fillStyle = color;
           const drawX = Math.floor(x * cellWidth);
           const drawY = Math.floor(y * cellHeight);
-          const w = Math.ceil(cellWidth);
-          const h = Math.ceil(cellHeight);
-          ctx.fillRect(drawX, drawY, w, h);
+          ctx.fillRect(drawX, drawY, Math.ceil(cellWidth), Math.ceil(cellHeight));
         }
       }
     }
@@ -247,7 +227,6 @@
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
@@ -299,13 +278,12 @@
         " ************                                            *************                  *************                 ***********************************                 ************************************                    *******************************************",
         "         "
       ];
-
+      
       const textRows = pauseText.length;
       const textCols = pauseText[0].length;
-      // Find center in "cell" coordinates
       const startX = Math.floor(patternCols / 2) - Math.floor(textCols / 2);
       const startY = Math.floor(patternRows / 2) - Math.floor(textRows / 2);
-
+      
       for (let row = 0; row < textRows; row++) {
         for (let col = 0; col < pauseText[row].length; col++) {
           if (pauseText[row][col] === '*') {
@@ -313,9 +291,7 @@
             ctx.fillStyle = color;
             const drawX = Math.floor((startX + col) * cellWidth);
             const drawY = Math.floor((startY + row) * cellHeight);
-            const w = Math.ceil(cellWidth);
-            const h = Math.ceil(cellHeight);
-            ctx.fillRect(drawX, drawY, w, h);
+            ctx.fillRect(drawX, drawY, Math.ceil(cellWidth), Math.ceil(cellHeight));
           }
         }
       }
@@ -338,61 +314,44 @@
     // 7) Pause/Resume with Keyboard and Click (for desktop)
     // ----------------------------------------------------------------
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        isPaused = true;
-      }
+      if (e.code === 'Space') { isPaused = true; }
     });
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'Space') {
-        isPaused = false;
-      }
+      if (e.code === 'Space') { isPaused = false; }
     });
-    canvas.addEventListener('click', function(e) {
-      isPaused = !isPaused;
-    });
+    canvas.addEventListener('click', () => { isPaused = !isPaused; });
 
     // ----------------------------------------------------------------
-    // 8) Updated Touch Events for Mobile (Differentiate Tap vs. Swipe)
+    // 8) Touch Events for Mobile
     // ----------------------------------------------------------------
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchMoved = false;
-    const swipeThreshold = 10; // Adjust as needed for sensitivity
+    // The animation pauses when a finger touches the canvas and resumes when the finger is lifted.
+    // Vertical swipes are not prevented so the website scrolls normally.
+    let touchStartX = 0, touchStartY = 0, touchMoved = false;
+    const swipeThreshold = 10;
 
     canvas.addEventListener('touchstart', function(e) {
       if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchMoved = false;
-        e.preventDefault();
+        isPaused = true; // Pause animation on touch
       }
-    }, { passive: false });
+    });
 
     canvas.addEventListener('touchmove', function(e) {
       if (e.touches.length === 1) {
         const dx = e.touches[0].clientX - touchStartX;
         const dy = e.touches[0].clientY - touchStartY;
-        if (Math.abs(dx) > swipeThreshold || Math.abs(dy) > swipeThreshold) {
+        if (Math.abs(dy) > swipeThreshold) {
           touchMoved = true;
-          // Adjust offsetX based on horizontal swipe (convert movement to cell units)
-          offsetX = (offsetX - Math.floor(dx / cellWidth)) % patternCols;
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          // Pause auto-scrolling while swiping
-          isPaused = true;
-          e.preventDefault();
+          // Do not preventDefault so vertical swiping scrolls the website normally
         }
       }
-    }, { passive: false });
+    });
 
     canvas.addEventListener('touchend', function(e) {
-      if (!touchMoved) {
-        // Minimal movement: toggle pause
-        isPaused = !isPaused;
-      } else {
-        // After swipe, resume auto animation
-        isPaused = false;
-      }
+      // Resume animation when the finger is lifted
+      isPaused = false;
     });
 
     // Start the animation loop
