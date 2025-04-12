@@ -12,6 +12,11 @@
     }
     canvas {
       display: block;
+      touch-action: none;               /* Disable default touch actions */
+      -ms-touch-action: none;
+      -webkit-touch-callout: none;      /* Prevent iOS lens/magnifier */
+      -webkit-user-select: none;        /* Disable text selection */
+      user-select: none;
     }
     #colorControls {
       position: absolute;
@@ -21,6 +26,8 @@
       background: rgba(255,255,255,0.2);
       padding: 8px;
       border-radius: 4px;
+      -webkit-user-select: auto;        /* Allow selection on these inputs */
+      user-select: auto;
     }
     #colorControls label {
       margin-right: 8px;
@@ -88,13 +95,21 @@
       document.getElementById('color4')
     ];
 
-    // Update pattern(s) when a color changes
+    // Update patterns when a color changes
     colorInputs.forEach((input, index) => {
       input.addEventListener('input', () => {
         retroColors[index] = input.value;
         // Regenerate both background & pause patterns
         currentPattern = generatePattern(patternCols, patternRows);
         pauseTextPattern = generatePattern(100, 35);
+      });
+    });
+
+    // Prevent touch events on color controls from bubbling to the canvas
+    const controls = document.getElementById('colorControls');
+    ['touchstart', 'touchmove', 'touchend'].forEach(eventType => {
+      controls.addEventListener(eventType, function(e) {
+        e.stopPropagation();
       });
     });
 
@@ -216,8 +231,6 @@
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
@@ -251,6 +264,7 @@
         " ***************************************                 ********************************************             ************                   ************               *****************************************             *******************************************",
         " ***********************************                     ********************************************             ************                   ************                  **************************************             *******************************************",
         " ************                                            ********************************************             ************                   ************                     ***********************************             *******************************************",
+        " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
         " ************                                            *************                  *************             ************                   ************                                            ************             ************                               ",
@@ -333,6 +347,8 @@
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchMoved = false;
+        // Prevent default behavior to stop lens/magnifier
+        e.preventDefault();
       }
     }, { passive: false });
 
