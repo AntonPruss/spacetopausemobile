@@ -9,13 +9,17 @@
       margin: 0;
       overflow: hidden;
       background-color: #000;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     canvas {
       display: block;
-      touch-action: none;               /* Disable default touch actions */
+      touch-action: none;            /* Prevent default touch actions */
       -ms-touch-action: none;
-      -webkit-touch-callout: none;      /* Prevent iOS lens/magnifier */
-      -webkit-user-select: none;        /* Disable text selection */
+      -webkit-touch-callout: none;   /* Prevent lens/magnifier on iOS */
+      -webkit-user-select: none;
       user-select: none;
     }
     #colorControls {
@@ -26,13 +30,27 @@
       background: rgba(255,255,255,0.2);
       padding: 8px;
       border-radius: 4px;
-      -webkit-user-select: auto;        /* Allow selection on these inputs */
-      user-select: auto;
+      /* Make the container unselectable, but allow inputs to be selectable */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     #colorControls label {
       margin-right: 8px;
       color: #fff;
       font-family: sans-serif;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    /* Allow the input fields to be interactive */
+    #colorControls input {
+      -webkit-user-select: auto;
+      -moz-user-select: auto;
+      -ms-user-select: auto;
+      user-select: auto;
     }
   </style>
 </head>
@@ -230,7 +248,6 @@
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            ************                   ************             ",
-        "                                                                                                   *************                            ************                   ************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
         "                                                                                                   *************                            *******************************************             ",
@@ -347,7 +364,6 @@
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchMoved = false;
-        // Prevent default behavior to stop lens/magnifier
         e.preventDefault();
       }
     }, { passive: false });
@@ -360,10 +376,9 @@
           touchMoved = true;
           // Adjust offsetX based on horizontal swipe (convert movement to cell units)
           offsetX = (offsetX - Math.floor(dx / cellWidth)) % patternCols;
-          // Update starting position for smoother incremental movement
           touchStartX = e.touches[0].clientX;
           touchStartY = e.touches[0].clientY;
-          // Pause the auto-scrolling while swiping
+          // Pause auto-scrolling while swiping
           isPaused = true;
           e.preventDefault();
         }
@@ -372,10 +387,10 @@
 
     canvas.addEventListener('touchend', function(e) {
       if (!touchMoved) {
-        // If there was no significant movement, treat as a tap to toggle pause
+        // Minimal movement: toggle pause
         isPaused = !isPaused;
       } else {
-        // After a swipe, resume auto animation
+        // After swipe, resume auto animation
         isPaused = false;
       }
     });
