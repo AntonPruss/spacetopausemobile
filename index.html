@@ -1,3 +1,4 @@
+```
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      overflow: auto;
       background-color: #000;
     }
     canvas {
@@ -338,10 +339,9 @@
     // ----------------------------------------------------------------
     // 8) Pause/Resume with Touch
     // ----------------------------------------------------------------
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault(); // optional; prevents page scrolling
-      isPaused = true;
-    }, { passive: false });
+ canvas.addEventListener('touchstart', (e) => {
+  isPaused = true;
+}, { passive: true });
 
     canvas.addEventListener('touchend', () => {
       isPaused = false;
@@ -352,3 +352,4 @@
   </script>
 </body>
 </html>
+```
