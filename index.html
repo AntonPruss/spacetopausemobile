@@ -70,8 +70,10 @@
       canvas.height = isMobile
   ? window.innerHeight * 0.75
   : window.innerHeight;;
-      cellWidth = canvas.width / patternCols;
-      cellHeight = canvas.height / patternRows;
+   // make cells square:
+  const w = canvas.width  / patternCols;
+  const h = canvas.height / patternRows;
+  cellWidth = cellHeight = Math.min(w, h);
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas(); // initial call
