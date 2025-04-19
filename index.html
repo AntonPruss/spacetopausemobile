@@ -239,6 +239,12 @@
     canvas.addEventListener('touchstart', () => { isPaused = true; });
     canvas.addEventListener('touchend',   () => { isPaused = false; });
 
+
+      // pause/resume on left‑click or tap
+    canvas.addEventListener('click', () => {
+      isPaused = !isPaused;
+    });
+    
     animate();
   </script>
 </body>
