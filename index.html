@@ -65,12 +65,12 @@
 
     let cellWidth, cellHeight;
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      cellWidth = canvas.width / patternCols;
-      cellHeight = canvas.height / patternRows;
-    }
+   function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight * 0.75;
+  cellWidth  = canvas.width  / patternCols;
+  cellHeight = canvas.height / patternRows;
+}
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas(); // initial call
 
