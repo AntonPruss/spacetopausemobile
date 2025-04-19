@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pixelated Pattern Generator</title>
   <style>
-  html, body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100vw;
@@ -26,21 +26,32 @@
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Settings for smooth, frame‑rate‑independent speed
+    // ─────────────────────────────────────────────────────────────────────────────
+    const SPEED_CELLS_PER_SECOND = 60;  // adjust this to make it faster/slower
+    let lastTimestamp = null;
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Grid setup
+    // ─────────────────────────────────────────────────────────────────────────────
     const patternCols = 300;
     const patternRows = 200;
     let cellWidth, cellHeight;
 
     function resizeCanvas() {
-  // size the drawing buffer exactly to the rendered element size
-  const rect = canvas.getBoundingClientRect();
-  canvas.width  = rect.width;
-  canvas.height = rect.height;
-  cellWidth  = canvas.width  / patternCols;
-  cellHeight = canvas.height / patternRows;
-}
+      const rect = canvas.getBoundingClientRect();
+      canvas.width  = rect.width;
+      canvas.height = rect.height;
+      cellWidth  = canvas.width  / patternCols;
+      cellHeight = canvas.height / patternRows;
+    }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Pattern generation
+    // ─────────────────────────────────────────────────────────────────────────────
     const retroColors = ['#eeeeee', '#979797', '#666666', '#000000'];
     function getRandomColor() {
       return retroColors[Math.floor(Math.random() * retroColors.length)];
@@ -56,18 +67,24 @@
       }
       return p;
     }
-
-    let currentPattern = generatePattern(patternCols, patternRows);
+    let currentPattern   = generatePattern(patternCols, patternRows);
     let pauseTextPattern = generatePattern(100, 35);
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Animation state
+    // ─────────────────────────────────────────────────────────────────────────────
     let offsetX = 0;
     let isPaused = false;
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Draw functions
+    // ─────────────────────────────────────────────────────────────────────────────
     function drawPattern() {
       ctx.imageSmoothingEnabled = false;
+      const cellOffset = Math.floor(offsetX);
       for (let y = 0; y < patternRows; y++) {
         for (let x = 0; x < patternCols; x++) {
-          ctx.fillStyle = currentPattern[y][(x + offsetX) % patternCols];
+          ctx.fillStyle = currentPattern[y][(x + cellOffset) % patternCols];
           const dx = Math.floor(x * cellWidth);
           const dy = Math.floor(y * cellHeight);
           ctx.fillRect(dx, dy, Math.ceil(cellWidth), Math.ceil(cellHeight));
@@ -75,7 +92,7 @@
       }
     }
 
-   const pauseText = [
+      const pauseText = [
         "        ************************************             ***********************************                                   ****************                                  ************************************             *******************************************",
         "     ***************************************             ***************************************                             ********************                             ***************************************             *******************************************",
         "   *****************************************             *******************************************                       ************************                         *****************************************             *******************************************",
@@ -207,8 +224,8 @@
 
     function drawPauseText() {
       ctx.imageSmoothingEnabled = false;
-      const startX = Math.floor(patternCols / 2) - Math.floor(textCols / 2);
-      const startY = Math.floor(patternRows / 2) - Math.floor(textRows / 2);
+      const startX = Math.floor(patternCols/2) - Math.floor(textCols/2);
+      const startY = Math.floor(patternRows/2) - Math.floor(textRows/2);
 
       for (let row = 0; row < textRows; row++) {
         for (let col = 0; col < pauseText[row].length; col++) {
@@ -223,29 +240,41 @@
       }
     }
 
-    function animate() {
-      if (!isPaused) offsetX = (offsetX + 8) % patternCols;
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Animation loop (now time‑based)
+    // ─────────────────────────────────────────────────────────────────────────────
+    function animate(timestamp) {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const deltaSeconds = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (!isPaused) {
+        offsetX = (offsetX + deltaSeconds * SPEED_CELLS_PER_SECOND) % patternCols;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPattern();
       drawPauseText();
       requestAnimationFrame(animate);
     }
 
-    // pause/resume with spacebar
-    window.addEventListener('keydown', e => { if (e.code === 'Space') isPaused = true; });
-    window.addEventListener('keyup',   e => { if (e.code === 'Space') isPaused = false; });
-
-    // pause on touch, but no preventDefault → page still scrolls
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Input handlers
+    // ─────────────────────────────────────────────────────────────────────────────
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') isPaused = true;
+    });
+    window.addEventListener('keyup', e => {
+      if (e.code === 'Space') isPaused = false;
+    });
     canvas.addEventListener('touchstart', () => { isPaused = true; });
     canvas.addEventListener('touchend',   () => { isPaused = false; });
+    canvas.addEventListener('click',      () => { isPaused = !isPaused; });
 
-
-      // pause/resume on left‑click or tap
-    canvas.addEventListener('click', () => {
-      isPaused = !isPaused;
-    });
-    
-    animate();
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  Kick off
+    // ─────────────────────────────────────────────────────────────────────────────
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
