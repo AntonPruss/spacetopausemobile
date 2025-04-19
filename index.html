@@ -31,11 +31,13 @@
     let cellWidth, cellHeight;
 
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      cellWidth = canvas.width / patternCols;
-      cellHeight = canvas.height / patternRows;
-    }
+  // size the drawing buffer exactly to the rendered element size
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width;
+  canvas.height = rect.height;
+  cellWidth  = canvas.width  / patternCols;
+  cellHeight = canvas.height / patternRows;
+}
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
