@@ -67,7 +67,9 @@
     let cellWidth, cellHeight;
     function resizeCanvas() {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = isMobile
+  ? window.innerHeight * 0.75
+  : window.innerHeight;;
       cellWidth = canvas.width / patternCols;
       cellHeight = canvas.height / patternRows;
     }
