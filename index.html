@@ -65,17 +65,7 @@
     const patternRows = isMobile ? 400 : 200;
 
     let cellWidth, cellHeight;
-   function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  // ← on mobile, only use 75% of the viewport height
-  canvas.height = isMobile
-    ? window.innerHeight * 0.75
-    : window.innerHeight;
-  cellWidth  = canvas.width  / patternCols;
-  cellHeight = canvas.height / patternRows;
-}
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // initial call
+   
 
     // ----------------------------------------------------------------
     // 2) Retro color array -- updated from color pickers
