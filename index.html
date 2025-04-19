@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      /* overflow: hidden;  ← removed so page stays scrollable */
       background-color: #000;
     }
     canvas {
@@ -21,10 +21,10 @@
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
 
-    // fixed grid
     const patternCols = 300;
     const patternRows = 200;
     let cellWidth, cellHeight;
+
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -34,13 +34,10 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // hard‐coded retro palette
     const retroColors = ['#eeeeee', '#979797', '#666666', '#000000'];
-
     function getRandomColor() {
       return retroColors[Math.floor(Math.random() * retroColors.length)];
     }
-
     function generatePattern(cols, rows) {
       const p = [];
       for (let y = 0; y < rows; y++) {
@@ -64,17 +61,16 @@
       for (let y = 0; y < patternRows; y++) {
         for (let x = 0; x < patternCols; x++) {
           ctx.fillStyle = currentPattern[y][(x + offsetX) % patternCols];
-          const drawX = Math.floor(x * cellWidth);
-          const drawY = Math.floor(y * cellHeight);
-          ctx.fillRect(drawX, drawY, Math.ceil(cellWidth), Math.ceil(cellHeight));
+          const dx = Math.floor(x * cellWidth);
+          const dy = Math.floor(y * cellHeight);
+          ctx.fillRect(dx, dy, Math.ceil(cellWidth), Math.ceil(cellHeight));
         }
       }
     }
 
-    // PAUSE text template (using '*' to draw pixels)
     const pauseText = [
       "        ************************************             ***********************************                                   ****************                                  ************************************             *******************************************",
-      // ... (keep all your existing PAUSE lines here) ...
+      // … keep all your existing PAUSE lines here …
       "         "
     ];
     const textCols = pauseText[0].length;
@@ -90,40 +86,29 @@
           if (pauseText[row][col] === '*') {
             const color = pauseTextPattern[row % pauseTextPattern.length][col % pauseTextPattern[0].length];
             ctx.fillStyle = color;
-            const drawX = Math.floor((startX + col) * cellWidth);
-            const drawY = Math.floor((startY + row) * cellHeight);
-            ctx.fillRect(drawX, drawY, Math.ceil(cellWidth), Math.ceil(cellHeight));
+            const dx = Math.floor((startX + col) * cellWidth);
+            const dy = Math.floor((startY + row) * cellHeight);
+            ctx.fillRect(dx, dy, Math.ceil(cellWidth), Math.ceil(cellHeight));
           }
         }
       }
     }
 
     function animate() {
-      if (!isPaused) {
-        offsetX = (offsetX + 8) % patternCols;
-      }
+      if (!isPaused) offsetX = (offsetX + 8) % patternCols;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPattern();
       drawPauseText();
       requestAnimationFrame(animate);
     }
 
-    // Spacebar to pause/resume
-    window.addEventListener('keydown', e => {
-      if (e.code === 'Space') isPaused = true;
-    });
-    window.addEventListener('keyup', e => {
-      if (e.code === 'Space') isPaused = false;
-    });
+    // pause/resume with spacebar
+    window.addEventListener('keydown', e => { if (e.code === 'Space') isPaused = true; });
+    window.addEventListener('keyup',   e => { if (e.code === 'Space') isPaused = false; });
 
-    // Touch to pause/resume
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      isPaused = true;
-    }, { passive: false });
-    canvas.addEventListener('touchend', () => {
-      isPaused = false;
-    });
+    // pause on touch, but no preventDefault → page still scrolls
+    canvas.addEventListener('touchstart', () => { isPaused = true; });
+    canvas.addEventListener('touchend',   () => { isPaused = false; });
 
     animate();
   </script>
